@@ -25,7 +25,7 @@ namespace DZarsky.NotesFunction.Services
             _config = config;
         }
 
-        public async Task<UserInfoResult> CreateUser(UserDto credentials)
+        public async Task<GenericResult<User>> CreateUser(UserDto credentials)
         {
             var container = GetContainer();
 
@@ -36,7 +36,7 @@ namespace DZarsky.NotesFunction.Services
 
             if ((await userByLogin.ReadNextAsync()).Any())
             {
-                return new UserInfoResult(ResultStatus.AlreadyExists);
+                return new GenericResult<User>(ResultStatus.AlreadyExists);
             }
 
             var hashedPassword = _passwordUtils.HashPassword(credentials.Password);
@@ -53,15 +53,15 @@ namespace DZarsky.NotesFunction.Services
 
             if (response.StatusCode != System.Net.HttpStatusCode.Created)
             {
-                return new UserInfoResult(ResultStatus.Failed);
+                return new GenericResult<User>(ResultStatus.Failed);
             }
 
             response.Resource.Password = null;
 
-            return new UserInfoResult(ResultStatus.Success, response.Resource);
+            return new GenericResult<User>(ResultStatus.Success, response.Resource);
         }
 
-        public async Task<UserInfoResult> GetInfo(UserDto credentials)
+        public async Task<GenericResult<User>> GetInfo(UserDto credentials)
         {
             var container = GetContainer();
 
@@ -74,12 +74,12 @@ namespace DZarsky.NotesFunction.Services
 
             if (user == null || !_passwordUtils.ValidatePassword(credentials.Password, user.Password))
             {
-                return new UserInfoResult(ResultStatus.NotFound);
+                return new GenericResult<User>(ResultStatus.NotFound);
             }
 
             user.Password = null;
 
-            return new UserInfoResult(ResultStatus.Success, user);
+            return new GenericResult<User>(ResultStatus.Success, user);
         }
 
         private Container GetContainer()

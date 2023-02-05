@@ -22,6 +22,7 @@ namespace DZarsky.NotesFunction
             builder.AddCommonFunctionServices(_configuration);
 
             builder.Services.AddScoped<UserService>();
+            builder.Services.AddScoped<NoteService>();
         }
     }
 }

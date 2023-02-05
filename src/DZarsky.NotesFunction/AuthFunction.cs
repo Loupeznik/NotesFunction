@@ -3,6 +3,7 @@ using System.Net;
 using System.Threading.Tasks;
 using DZarsky.CommonLibraries.AzureFunctions.Extensions;
 using DZarsky.CommonLibraries.AzureFunctions.General;
+using DZarsky.CommonLibraries.AzureFunctions.Models.Users;
 using DZarsky.NotesFunction.General;
 using DZarsky.NotesFunction.Models;
 using DZarsky.NotesFunction.Services;
@@ -33,7 +34,7 @@ namespace DZarsky.NotesFunction
         [OpenApiOperation(operationId: "CreateUser", tags: new[] { Constants.AuthSectionName })]
         [OpenApiRequestBody(ApiConstants.JsonContentType, typeof(UserDto))]
         [OpenApiSecurity(ApiConstants.ApiKeyAuthSchemeID, SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = Constants.AuthApiKeyHeader)]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: ApiConstants.JsonContentType, bodyType: typeof(UserInfoResult), Description = "Success")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: ApiConstants.JsonContentType, bodyType: typeof(GenericResult<User>), Description = "Success")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: ApiConstants.JsonContentType, bodyType: typeof(ProblemDetails), Description = "Bad request")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: ApiConstants.JsonContentType, bodyType: typeof(ProblemDetails), Description = "Unauthorized")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Conflict, contentType: ApiConstants.JsonContentType, bodyType: typeof(ProblemDetails), Description = "Conflict")]
@@ -83,14 +84,14 @@ namespace DZarsky.NotesFunction
                 });
             }
 
-            return new OkObjectResult(result.User);
+            return new OkObjectResult(result.Result);
         }
 
         [FunctionName("GetUserInfo")]
         [OpenApiOperation(operationId: "GetUserInfo", tags: new[] { Constants.AuthSectionName })]
         [OpenApiRequestBody(ApiConstants.JsonContentType, typeof(UserDto))]
         [OpenApiSecurity(ApiConstants.ApiKeyAuthSchemeID, SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = Constants.AuthApiKeyHeader)]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: ApiConstants.JsonContentType, bodyType: typeof(UserInfoResult), Description = "Success")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: ApiConstants.JsonContentType, bodyType: typeof(GenericResult<User>), Description = "Success")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: ApiConstants.JsonContentType, bodyType: typeof(ProblemDetails), Description = "Bad request")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: ApiConstants.JsonContentType, bodyType: typeof(ProblemDetails), Description = "Unauthorized")]
         public async Task<IActionResult> GetInfo(
@@ -139,7 +140,7 @@ namespace DZarsky.NotesFunction
                 });
             }
 
-            return new OkObjectResult(result.User);
+            return new OkObjectResult(result.Result);
         }
     }
 }
