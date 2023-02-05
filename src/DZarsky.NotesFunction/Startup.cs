@@ -1,4 +1,5 @@
 ﻿using DZarsky.CommonLibraries.AzureFunctions.Infrastructure;
+using DZarsky.NotesFunction.Services;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +21,7 @@ namespace DZarsky.NotesFunction
         {
             builder.AddCommonFunctionServices(_configuration);
 
+            builder.Services.AddScoped<UserService>();
         }
     }
 }
