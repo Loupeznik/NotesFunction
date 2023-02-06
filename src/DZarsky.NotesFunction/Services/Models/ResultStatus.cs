@@ -9,6 +9,7 @@ namespace DZarsky.NotesFunction.Services.Models
         Success,
         Failed,
         AlreadyExists,
-        NotFound
+        NotFound,
+        BadRequest
     }
 }

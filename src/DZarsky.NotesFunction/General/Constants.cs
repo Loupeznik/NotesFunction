@@ -6,6 +6,6 @@
         public const string NotesSectionName = "notes";
         public const string AuthApiKeyHeader = "X-SIGNUP-KEY";
 
-        public const string NotesContainerName = "Notes";
+        public const string NotesContainerId = "Notes";
     }
 }

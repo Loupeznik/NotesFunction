@@ -42,7 +42,14 @@ namespace DZarsky.NotesFunction
                 return new UnauthorizedResult();
             }
 
-            return new OkResult();
+            var result = await _noteService.Create(note, authResult.UserID);
+
+            if (result.Status == Services.Models.ResultStatus.BadRequest)
+            {
+                return new BadRequestResult();
+            }
+
+            return new OkObjectResult(result.Result);
         }
 
         private async Task<AuthResult> Authorize(HttpRequest request)
