@@ -75,6 +75,7 @@ namespace DZarsky.NotesFunction.Services
 
             var dbNote = _mapper.Map<Note>(note);
             dbNote.UpdatedAt = DateTime.UtcNow;
+            dbNote.UserId = userId;
 
             var response = await container.ReplaceItemAsync(dbNote, note.Id);
 
@@ -117,7 +118,7 @@ namespace DZarsky.NotesFunction.Services
                 .Where(x => x.UserId == userId && x.Id == id)
                 .ToFeedIterator();
 
-            var note = (await notes.ReadNextAsync()).FirstOrDefault();
+            var note = (await notes.ReadNextAsync()).Resource.FirstOrDefault();
 
             if (note is null)
             {
@@ -147,9 +148,12 @@ namespace DZarsky.NotesFunction.Services
                 return new GenericResult(ResultStatus.NotFound);
             }
 
-            var response = await container.DeleteItemAsync<Note>(id, new PartitionKey(id));
+            var response = await container.PatchItemAsync<Note>(id, new PartitionKey(id),
+                new List<PatchOperation> {
+                    PatchOperation.Replace("/IsDeleted", true)
+                });
 
-            if (response.StatusCode != HttpStatusCode.NoContent)
+            if (response.StatusCode != HttpStatusCode.OK)
             {
                 _logger.LogError($"Delete note request failed with status {response.StatusCode}", JsonConvert.SerializeObject(response));
                 return new GenericResult(ResultStatus.Failed);
