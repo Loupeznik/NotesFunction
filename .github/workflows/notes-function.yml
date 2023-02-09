@@ -19,7 +19,7 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
     - name: Add NuGet source
-      run: dotnet nuget add source https://nuget.dzarsky.eu -n nuget.dzarsky.eu
+      run: dotnet nuget add source https://nuget.dzarsky.eu/v3/index.json -n nuget.dzarsky.eu
     - name: Restore
       run: dotnet restore "${{ env.WORKING_DIRECTORY }}"
     - name: Build
