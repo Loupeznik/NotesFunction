@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.OpenApi.Models;
 
 namespace DZarsky.NotesFunction
@@ -30,7 +31,10 @@ namespace DZarsky.NotesFunction
 
         [FunctionName(nameof(CreateNote))]
         [OpenApiOperation(operationId: nameof(CreateNote), tags: new[] { Constants.NotesSectionName })]
+        [OpenApiSecurity(ApiConstants.BasicAuthSchemeID, SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Basic)]
+        [OpenApiRequestBody(ApiConstants.JsonContentType, typeof(NoteDto))]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: ApiConstants.JsonContentType, bodyType: typeof(NoteDto), Description = "The OK response")]
+        [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.BadRequest, Description = nameof(HttpStatusCode.BadRequest))]
         public async Task<IActionResult> CreateNote(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = Constants.NotesSectionName)] NoteDto note, HttpRequest req)
         {
@@ -48,7 +52,11 @@ namespace DZarsky.NotesFunction
 
         [FunctionName(nameof(UpdateNote))]
         [OpenApiOperation(operationId: nameof(UpdateNote), tags: new[] { Constants.NotesSectionName })]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: ApiConstants.JsonContentType, bodyType: typeof(NoteDto), Description = "The OK response")]
+        [OpenApiSecurity(ApiConstants.BasicAuthSchemeID, SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Basic)]
+        [OpenApiRequestBody(ApiConstants.JsonContentType, typeof(NoteDto))]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: ApiConstants.JsonContentType, bodyType: typeof(NoteDto), Description = "Success")]
+        [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.BadRequest, Description = nameof(HttpStatusCode.BadRequest))]
+        [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NotFound, Description = nameof(HttpStatusCode.NotFound))]
         public async Task<IActionResult> UpdateNote(
             [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = Constants.NotesSectionName)] NoteDto note, HttpRequest req)
         {
@@ -66,7 +74,10 @@ namespace DZarsky.NotesFunction
 
         [FunctionName(nameof(GetNote))]
         [OpenApiOperation(operationId: nameof(GetNote), tags: new[] { Constants.NotesSectionName })]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: ApiConstants.JsonContentType, bodyType: typeof(NoteDto), Description = "The OK response")]
+        [OpenApiSecurity(ApiConstants.BasicAuthSchemeID, SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Basic)]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: ApiConstants.JsonContentType, bodyType: typeof(NoteDto), Description = "Success")]
+        [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.BadRequest, Description = nameof(HttpStatusCode.BadRequest))]
+        [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NotFound, Description = nameof(HttpStatusCode.NotFound))]
         public async Task<IActionResult> GetNote(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = Constants.NotesSectionName + "/{noteId}")] HttpRequest req, string? noteId)
         {
@@ -89,7 +100,10 @@ namespace DZarsky.NotesFunction
 
         [FunctionName(nameof(GetNotes))]
         [OpenApiOperation(operationId: nameof(GetNotes), tags: new[] { Constants.NotesSectionName })]
+        [OpenApiSecurity(ApiConstants.BasicAuthSchemeID, SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Basic)]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: ApiConstants.JsonContentType, bodyType: typeof(List<NoteDto>), Description = "The OK response")]
+        [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.BadRequest, Description = nameof(HttpStatusCode.BadRequest))]
+        [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NotFound, Description = nameof(HttpStatusCode.NotFound))]
         public async Task<IActionResult> GetNotes(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = Constants.NotesSectionName)] HttpRequest req)
         {
@@ -107,7 +121,10 @@ namespace DZarsky.NotesFunction
 
         [FunctionName(nameof(DeleteNote))]
         [OpenApiOperation(operationId: nameof(DeleteNote), tags: new[] { Constants.NotesSectionName })]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: ApiConstants.JsonContentType, bodyType: typeof(List<NoteDto>), Description = "The OK response")]
+        [OpenApiSecurity(ApiConstants.BasicAuthSchemeID, SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Basic)]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: ApiConstants.JsonContentType, bodyType: typeof(object), Description = "Success")]
+        [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.BadRequest, Description = nameof(HttpStatusCode.BadRequest))]
+        [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NotFound, Description = nameof(HttpStatusCode.NotFound))]
         public async Task<IActionResult> DeleteNote(
             [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = Constants.NotesSectionName + "/{noteId}")] HttpRequest req, string? noteId)
         {
