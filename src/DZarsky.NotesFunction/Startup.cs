@@ -1,4 +1,5 @@
 ﻿using DZarsky.CommonLibraries.AzureFunctions.Infrastructure;
+using DZarsky.CommonLibraries.AzureFunctions.Models.Auth;
 using DZarsky.NotesFunction.Services;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
@@ -18,10 +19,9 @@ namespace DZarsky.NotesFunction
             .Build();
 
         public override void Configure(IFunctionsHostBuilder builder)
-        {
-            builder.AddCommonFunctionServices(_configuration);
+        {  
+            builder.AddCommonFunctionServices(_configuration, AuthType.Zitadel);
 
-            builder.Services.AddScoped<UserService>();
             builder.Services.AddScoped<NoteService>();
         }
     }

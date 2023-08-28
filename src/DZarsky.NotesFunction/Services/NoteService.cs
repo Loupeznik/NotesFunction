@@ -44,7 +44,7 @@ namespace DZarsky.NotesFunction.Services
                 UserId = userId
             });
 
-            if (response.StatusCode != System.Net.HttpStatusCode.Created)
+            if (response.StatusCode != HttpStatusCode.Created)
             {
                 _logger.LogError($"Create note request failed with status {response.StatusCode}", JsonConvert.SerializeObject(response));
                 return new GenericResult<NoteDto>(ResultStatus.Failed);
