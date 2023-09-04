@@ -11,7 +11,7 @@ namespace DZarsky.NotesFunction
 {
     internal class Startup : FunctionsStartup
     {
-        private static readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
+        private static readonly IConfigurationRoot Configuration = new ConfigurationBuilder()
             .SetBasePath(Environment.CurrentDirectory)
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
@@ -19,8 +19,8 @@ namespace DZarsky.NotesFunction
             .Build();
 
         public override void Configure(IFunctionsHostBuilder builder)
-        {  
-            builder.AddCommonFunctionServices(_configuration, AuthType.Zitadel);
+        {
+            builder.AddCommonFunctionServices(Configuration, AuthType.Zitadel);
 
             builder.Services.AddScoped<NoteService>();
         }

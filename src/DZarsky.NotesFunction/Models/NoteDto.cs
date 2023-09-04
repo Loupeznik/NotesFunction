@@ -13,5 +13,7 @@ namespace DZarsky.NotesFunction.Models
         public DateTime CreatedAt { get; set; }
 
         public bool IsResolved { get; set; }
+
+        public bool IsEncrypted { get; set; }
     }
 }

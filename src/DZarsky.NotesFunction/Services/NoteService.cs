@@ -38,19 +38,21 @@ namespace DZarsky.NotesFunction.Services
             {
                 Id = Guid.NewGuid().ToString(),
                 Title = note.Title,
-                Text = note.Text,
+                Text = note.Text ?? string.Empty,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                UserId = userId
+                UserId = userId,
+                IsEncrypted = note.IsEncrypted
             });
 
-            if (response.StatusCode != HttpStatusCode.Created)
+            if (response.StatusCode == HttpStatusCode.Created)
             {
-                _logger.LogError($"Create note request failed with status {response.StatusCode}", JsonConvert.SerializeObject(response));
-                return new GenericResult<NoteDto>(ResultStatus.Failed);
+                return new GenericResult<NoteDto>(ResultStatus.Success, _mapper.Map<NoteDto>(response.Resource));
             }
 
-            return new GenericResult<NoteDto>(ResultStatus.Success, _mapper.Map<NoteDto>(response.Resource));
+            _logger.LogError($"Create note request failed with status {response.StatusCode}",
+                JsonConvert.SerializeObject(response));
+            return new GenericResult<NoteDto>(ResultStatus.Failed);
         }
 
         public async Task<GenericResult<NoteDto>> Update(NoteDto note, string userId)
@@ -69,7 +71,8 @@ namespace DZarsky.NotesFunction.Services
 
             if (!(await noteById.ReadNextAsync()).Any())
             {
-                _logger.LogInformation($"Unauthorized access to note {note.Id} by user {userId} with action {nameof(Update)}");
+                _logger.LogInformation(
+                    $"Unauthorized access to note {note.Id} by user {userId} with action {nameof(Update)}");
                 return new GenericResult<NoteDto>(ResultStatus.NotFound);
             }
 
@@ -79,13 +82,14 @@ namespace DZarsky.NotesFunction.Services
 
             var response = await container.ReplaceItemAsync(dbNote, note.Id);
 
-            if (response.StatusCode != HttpStatusCode.OK)
+            if (response.StatusCode == HttpStatusCode.OK)
             {
-                _logger.LogError($"Create note request failed with status {response.StatusCode}", JsonConvert.SerializeObject(response));
-                return new GenericResult<NoteDto>(ResultStatus.Failed);
+                return new GenericResult<NoteDto>(ResultStatus.Success, _mapper.Map<NoteDto>(response.Resource));
             }
 
-            return new GenericResult<NoteDto>(ResultStatus.Success, _mapper.Map<NoteDto>(response.Resource));
+            _logger.LogError($"Create note request failed with status {response.StatusCode}",
+                JsonConvert.SerializeObject(response));
+            return new GenericResult<NoteDto>(ResultStatus.Failed);
         }
 
         public async Task<GenericResult<IList<NoteDto>>> List(string userId)
@@ -120,12 +124,9 @@ namespace DZarsky.NotesFunction.Services
 
             var note = (await notes.ReadNextAsync()).Resource.FirstOrDefault();
 
-            if (note is null)
-            {
-                return new GenericResult<NoteDto>(ResultStatus.NotFound);
-            }
-
-            return new GenericResult<NoteDto>(ResultStatus.Success, _mapper.Map<NoteDto>(note));
+            return note is null
+                ? new GenericResult<NoteDto>(ResultStatus.NotFound)
+                : new GenericResult<NoteDto>(ResultStatus.Success, _mapper.Map<NoteDto>(note));
         }
 
         public async Task<GenericResult> Delete(string? id, string userId)
@@ -144,22 +145,25 @@ namespace DZarsky.NotesFunction.Services
 
             if (!(await noteById.ReadNextAsync()).Any())
             {
-                _logger.LogInformation($"Unauthorized access on note {id} by user {userId} with action {nameof(Delete)}");
+                _logger.LogInformation(
+                    $"Unauthorized access on note {id} by user {userId} with action {nameof(Delete)}");
                 return new GenericResult(ResultStatus.NotFound);
             }
 
             var response = await container.PatchItemAsync<Note>(id, new PartitionKey(id),
-                new List<PatchOperation> {
+                new List<PatchOperation>
+                {
                     PatchOperation.Replace("/IsDeleted", true)
                 });
 
-            if (response.StatusCode != HttpStatusCode.OK)
+            if (response.StatusCode == HttpStatusCode.OK)
             {
-                _logger.LogError($"Delete note request failed with status {response.StatusCode}", JsonConvert.SerializeObject(response));
-                return new GenericResult(ResultStatus.Failed);
+                return new GenericResult(ResultStatus.Success);
             }
 
-            return new GenericResult(ResultStatus.Success);
+            _logger.LogError($"Delete note request failed with status {response.StatusCode}",
+                JsonConvert.SerializeObject(response));
+            return new GenericResult(ResultStatus.Failed);
         }
 
         private Container GetContainer()

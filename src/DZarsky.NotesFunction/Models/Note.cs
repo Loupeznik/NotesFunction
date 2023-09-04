@@ -21,5 +21,7 @@ namespace DZarsky.NotesFunction.Models
         public bool IsDeleted { get; set; }
 
         public bool IsResolved { get; set; }
+
+        public bool IsEncrypted { get; set; }
     }
 }
