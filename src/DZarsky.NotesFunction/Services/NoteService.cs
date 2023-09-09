@@ -15,160 +15,161 @@ using UltraMapper;
 
 namespace DZarsky.NotesFunction.Services
 {
-    public sealed class NoteService
-    {
-        private readonly CosmosClient _db;
-        private readonly CosmosConfiguration _config;
-        private readonly ILogger<NoteService> _logger;
-        private readonly Mapper _mapper;
+	public sealed class NoteService
+	{
+		private readonly CosmosClient _db;
+		private readonly CosmosConfiguration _config;
+		private readonly ILogger<NoteService> _logger;
+		private readonly Mapper _mapper;
 
-        public NoteService(CosmosClient db, CosmosConfiguration config, ILogger<NoteService> logger)
-        {
-            _db = db;
-            _config = config;
-            _logger = logger;
-            _mapper = new Mapper();
-        }
+		public NoteService(CosmosClient db, CosmosConfiguration config, ILogger<NoteService> logger)
+		{
+			_db = db;
+			_config = config;
+			_logger = logger;
+			_mapper = new Mapper();
+		}
 
-        public async Task<GenericResult<NoteDto>> Create(NoteDto note, string userId)
-        {
-            var container = GetContainer();
+		public async Task<GenericResult<NoteDto>> Create(NoteDto note, string userId)
+		{
+			var container = GetContainer();
 
-            var response = await container.CreateItemAsync(new Note
-            {
-                Id = Guid.NewGuid().ToString(),
-                Title = note.Title,
-                Text = note.Text ?? string.Empty,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                UserId = userId,
-                IsEncrypted = note.IsEncrypted
-            });
+			var response = await container.CreateItemAsync(new Note
+			{
+				Id = Guid.NewGuid().ToString(),
+				Title = note.Title,
+				Text = note.Text ?? string.Empty,
+				EncodedText = note.EncodedText,
+				CreatedAt = DateTime.UtcNow,
+				UpdatedAt = DateTime.UtcNow,
+				UserId = userId,
+				IsEncrypted = note.IsEncrypted
+			});
 
-            if (response.StatusCode == HttpStatusCode.Created)
-            {
-                return new GenericResult<NoteDto>(ResultStatus.Success, _mapper.Map<NoteDto>(response.Resource));
-            }
+			if (response.StatusCode == HttpStatusCode.Created)
+			{
+				return new GenericResult<NoteDto>(ResultStatus.Success, _mapper.Map<NoteDto>(response.Resource));
+			}
 
-            _logger.LogError($"Create note request failed with status {response.StatusCode}",
-                JsonConvert.SerializeObject(response));
-            return new GenericResult<NoteDto>(ResultStatus.Failed);
-        }
+			_logger.LogError($"Create note request failed with status {response.StatusCode}",
+				JsonConvert.SerializeObject(response));
+			return new GenericResult<NoteDto>(ResultStatus.Failed);
+		}
 
-        public async Task<GenericResult<NoteDto>> Update(NoteDto note, string userId)
-        {
-            if (string.IsNullOrWhiteSpace(note.Id))
-            {
-                return new GenericResult<NoteDto>(ResultStatus.BadRequest);
-            }
+		public async Task<GenericResult<NoteDto>> Update(NoteDto note, string userId)
+		{
+			if (string.IsNullOrWhiteSpace(note.Id))
+			{
+				return new GenericResult<NoteDto>(ResultStatus.BadRequest);
+			}
 
-            var container = GetContainer();
+			var container = GetContainer();
 
-            var noteById = container
-                .GetItemLinqQueryable<Note>()
-                .Where(x => x.UserId == userId && x.Id == note.Id)
-                .ToFeedIterator();
+			var noteById = container
+				.GetItemLinqQueryable<Note>()
+				.Where(x => x.UserId == userId && x.Id == note.Id)
+				.ToFeedIterator();
 
-            if (!(await noteById.ReadNextAsync()).Any())
-            {
-                _logger.LogInformation(
-                    $"Unauthorized access to note {note.Id} by user {userId} with action {nameof(Update)}");
-                return new GenericResult<NoteDto>(ResultStatus.NotFound);
-            }
+			if (!(await noteById.ReadNextAsync()).Any())
+			{
+				_logger.LogInformation(
+					$"Unauthorized access to note {note.Id} by user {userId} with action {nameof(Update)}");
+				return new GenericResult<NoteDto>(ResultStatus.NotFound);
+			}
 
-            var dbNote = _mapper.Map<Note>(note);
-            dbNote.UpdatedAt = DateTime.UtcNow;
-            dbNote.UserId = userId;
+			var dbNote = _mapper.Map<Note>(note);
+			dbNote.UpdatedAt = DateTime.UtcNow;
+			dbNote.UserId = userId;
 
-            var response = await container.ReplaceItemAsync(dbNote, note.Id);
+			var response = await container.ReplaceItemAsync(dbNote, note.Id);
 
-            if (response.StatusCode == HttpStatusCode.OK)
-            {
-                return new GenericResult<NoteDto>(ResultStatus.Success, _mapper.Map<NoteDto>(response.Resource));
-            }
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				return new GenericResult<NoteDto>(ResultStatus.Success, _mapper.Map<NoteDto>(response.Resource));
+			}
 
-            _logger.LogError($"Create note request failed with status {response.StatusCode}",
-                JsonConvert.SerializeObject(response));
-            return new GenericResult<NoteDto>(ResultStatus.Failed);
-        }
+			_logger.LogError($"Create note request failed with status {response.StatusCode}",
+				JsonConvert.SerializeObject(response));
+			return new GenericResult<NoteDto>(ResultStatus.Failed);
+		}
 
-        public async Task<GenericResult<IList<NoteDto>>> List(string userId)
-        {
-            var container = GetContainer();
+		public async Task<GenericResult<IList<NoteDto>>> List(string userId)
+		{
+			var container = GetContainer();
 
-            var notes = new List<Note>();
+			var notes = new List<Note>();
 
-            var response = container
-                .GetItemLinqQueryable<Note>()
-                .Where(x => x.UserId == userId)
-                .ToFeedIterator();
+			var response = container
+				.GetItemLinqQueryable<Note>()
+				.Where(x => x.UserId == userId)
+				.ToFeedIterator();
 
-            notes.AddRange(await response.ReadNextAsync());
+			notes.AddRange(await response.ReadNextAsync());
 
-            return new GenericResult<IList<NoteDto>>(ResultStatus.Success, _mapper.Map<List<NoteDto>>(notes));
-        }
+			return new GenericResult<IList<NoteDto>>(ResultStatus.Success, _mapper.Map<List<NoteDto>>(notes));
+		}
 
-        public async Task<GenericResult<NoteDto>> Get(string? id, string userId)
-        {
-            if (string.IsNullOrWhiteSpace(id))
-            {
-                return new GenericResult<NoteDto>(ResultStatus.BadRequest);
-            }
+		public async Task<GenericResult<NoteDto>> Get(string? id, string userId)
+		{
+			if (string.IsNullOrWhiteSpace(id))
+			{
+				return new GenericResult<NoteDto>(ResultStatus.BadRequest);
+			}
 
-            var container = GetContainer();
+			var container = GetContainer();
 
-            var notes = container
-                .GetItemLinqQueryable<Note>()
-                .Where(x => x.UserId == userId && x.Id == id)
-                .ToFeedIterator();
+			var notes = container
+				.GetItemLinqQueryable<Note>()
+				.Where(x => x.UserId == userId && x.Id == id)
+				.ToFeedIterator();
 
-            var note = (await notes.ReadNextAsync()).Resource.FirstOrDefault();
+			var note = (await notes.ReadNextAsync()).Resource.FirstOrDefault();
 
-            return note is null
-                ? new GenericResult<NoteDto>(ResultStatus.NotFound)
-                : new GenericResult<NoteDto>(ResultStatus.Success, _mapper.Map<NoteDto>(note));
-        }
+			return note is null
+				? new GenericResult<NoteDto>(ResultStatus.NotFound)
+				: new GenericResult<NoteDto>(ResultStatus.Success, _mapper.Map<NoteDto>(note));
+		}
 
-        public async Task<GenericResult> Delete(string? id, string userId)
-        {
-            if (string.IsNullOrWhiteSpace(id))
-            {
-                return new GenericResult<NoteDto>(ResultStatus.BadRequest);
-            }
+		public async Task<GenericResult> Delete(string? id, string userId)
+		{
+			if (string.IsNullOrWhiteSpace(id))
+			{
+				return new GenericResult<NoteDto>(ResultStatus.BadRequest);
+			}
 
-            var container = GetContainer();
+			var container = GetContainer();
 
-            var noteById = container
-                .GetItemLinqQueryable<Note>()
-                .Where(x => x.UserId == userId && x.Id == id)
-                .ToFeedIterator();
+			var noteById = container
+				.GetItemLinqQueryable<Note>()
+				.Where(x => x.UserId == userId && x.Id == id)
+				.ToFeedIterator();
 
-            if (!(await noteById.ReadNextAsync()).Any())
-            {
-                _logger.LogInformation(
-                    $"Unauthorized access on note {id} by user {userId} with action {nameof(Delete)}");
-                return new GenericResult(ResultStatus.NotFound);
-            }
+			if (!(await noteById.ReadNextAsync()).Any())
+			{
+				_logger.LogInformation(
+					$"Unauthorized access on note {id} by user {userId} with action {nameof(Delete)}");
+				return new GenericResult(ResultStatus.NotFound);
+			}
 
-            var response = await container.PatchItemAsync<Note>(id, new PartitionKey(id),
-                new List<PatchOperation>
-                {
-                    PatchOperation.Replace("/IsDeleted", true)
-                });
+			var response = await container.PatchItemAsync<Note>(id, new PartitionKey(id),
+				new List<PatchOperation>
+				{
+					PatchOperation.Replace("/IsDeleted", true)
+				});
 
-            if (response.StatusCode == HttpStatusCode.OK)
-            {
-                return new GenericResult(ResultStatus.Success);
-            }
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				return new GenericResult(ResultStatus.Success);
+			}
 
-            _logger.LogError($"Delete note request failed with status {response.StatusCode}",
-                JsonConvert.SerializeObject(response));
-            return new GenericResult(ResultStatus.Failed);
-        }
+			_logger.LogError($"Delete note request failed with status {response.StatusCode}",
+				JsonConvert.SerializeObject(response));
+			return new GenericResult(ResultStatus.Failed);
+		}
 
-        private Container GetContainer()
-        {
-            return _db.GetContainer(_config.DatabaseID, Constants.NotesContainerId);
-        }
-    }
+		private Container GetContainer()
+		{
+			return _db.GetContainer(_config.DatabaseID, Constants.NotesContainerId);
+		}
+	}
 }
