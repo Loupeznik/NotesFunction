@@ -93,7 +93,7 @@ namespace DZarsky.NotesFunction.Services
 			return new GenericResult<NoteDto>(ResultStatus.Failed);
 		}
 
-		public async Task<GenericResult<IList<NoteDto>>> List(string userId)
+		public async Task<GenericResult<IList<NoteDto>>> List(string userId, bool getDeleted = false)
 		{
 			var container = GetContainer();
 
@@ -101,7 +101,7 @@ namespace DZarsky.NotesFunction.Services
 
 			var response = container
 				.GetItemLinqQueryable<Note>()
-				.Where(x => x.UserId == userId)
+				.Where(x => x.UserId == userId && (getDeleted || !x.IsDeleted))
 				.ToFeedIterator();
 
 			notes.AddRange(await response.ReadNextAsync());
