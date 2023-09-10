@@ -1,14 +1,18 @@
-name: Build and deploy .NET Core application to Function App notes-function-canary
+name: Canary
+
 on:
   push:
     branches:
     - v2
+    - master
+
 env:
   AZURE_FUNCTIONAPP_NAME: notes-function-canary
   AZURE_FUNCTIONAPP_PACKAGE_PATH: src/DZarsky.NotesFunction/.
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 6.0.x
   WORKING_DIRECTORY: src/DZarsky.NotesFunction
+
 jobs:
   build:
     runs-on: ubuntu-latest

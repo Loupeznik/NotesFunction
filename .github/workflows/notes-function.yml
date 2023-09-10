@@ -1,14 +1,17 @@
-name: CI/CD
+name: v1
+
 on:
   push:
     branches:
-    - master
+    - v1
+
 env:
   AZURE_FUNCTIONAPP_NAME: notes-function
   AZURE_FUNCTIONAPP_PACKAGE_PATH: src/DZarsky.NotesFunction/.
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 6.0.x
   WORKING_DIRECTORY: src/DZarsky.NotesFunction
+
 jobs:
   build:
     runs-on: ubuntu-latest
