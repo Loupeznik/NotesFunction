@@ -3,7 +3,6 @@ using System.Net;
 using System.Threading.Tasks;
 using DZarsky.CommonLibraries.AzureFunctions.General;
 using DZarsky.CommonLibraries.AzureFunctions.Models.Auth;
-using DZarsky.CommonLibraries.AzureFunctions.Security.CosmosDB;
 using DZarsky.NotesFunction.General;
 using DZarsky.NotesFunction.Models;
 using DZarsky.NotesFunction.Services;
@@ -15,18 +14,19 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.OpenApi.Models;
+using DZarsky.CommonLibraries.AzureFunctions.Security;
 
 namespace DZarsky.NotesFunction
 {
     public class NotesFunction
     {
-        private readonly CosmosAuthManager _authManager;
         private readonly NoteService _noteService;
+        private readonly IAuthManager _authManager;
 
-        public NotesFunction(CosmosAuthManager authManager, NoteService noteService)
+        public NotesFunction( NoteService noteService, IAuthManager authManager)
         {
-            _authManager = authManager;
             _noteService = noteService;
+            _authManager = authManager;
         }
 
         [FunctionName(nameof(CreateNote))]
@@ -100,6 +100,7 @@ namespace DZarsky.NotesFunction
 
         [FunctionName(nameof(GetNotes))]
         [OpenApiOperation(operationId: nameof(GetNotes), tags: new[] { Constants.NotesSectionName })]
+        [OpenApiParameter("getDeleted", In = ParameterLocation.Query, Type = typeof(bool), Required = false, Description = "Determines if deleted records should be fetched, defaults to 'false'")]
         [OpenApiSecurity(ApiConstants.BasicAuthSchemeID, SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Basic)]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: ApiConstants.JsonContentType, bodyType: typeof(List<NoteDto>), Description = "The OK response")]
         [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.BadRequest, Description = nameof(HttpStatusCode.BadRequest))]
@@ -114,7 +115,9 @@ namespace DZarsky.NotesFunction
                 return new UnauthorizedResult();
             }
 
-            var result = await _noteService.List(authResult.UserID);
+            var getDeleted = req.Query.ContainsKey("getDeleted") && bool.TryParse(req.Query["getDeleted"], out var getDeletedValue) && getDeletedValue;
+
+            var result = await _noteService.List(authResult.UserID, getDeleted);
 
             return ResolveResultStatus(result.Status, result.Result);
         }
@@ -145,19 +148,7 @@ namespace DZarsky.NotesFunction
             return ResolveResultStatus<GenericResult>(result.Status, null);
         }
 
-        private async Task<AuthResult> Authorize(HttpRequest request)
-        {
-            var authHeader = request.Headers["Authorization"];
-
-            var credentials = CosmosAuthManager.ParseToken(authHeader);
-
-            if (credentials == null)
-            {
-                return new AuthResult(AuthResultStatus.InvalidLoginOrPassword);
-            }
-
-            return await _authManager.ValidateCredentials(credentials);
-        }
+        private async Task<AuthResult> Authorize(HttpRequest request) => await _authManager.ValidateToken(request.Headers.Authorization);
 
         private static IActionResult ResolveResultStatus<T>(ResultStatus status, T? result)
         {

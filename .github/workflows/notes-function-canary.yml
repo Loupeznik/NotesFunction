@@ -1,12 +1,13 @@
-name: v1
+name: Canary
 
 on:
   push:
     branches:
-    - v1
+    - v2
+    - master
 
 env:
-  AZURE_FUNCTIONAPP_NAME: notes-function
+  AZURE_FUNCTIONAPP_NAME: notes-function-canary
   AZURE_FUNCTIONAPP_PACKAGE_PATH: src/DZarsky.NotesFunction/.
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 6.0.x
@@ -16,9 +17,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
+    - uses: actions/checkout@v3
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v3
       with:
         dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
     - name: Add NuGet source
@@ -47,5 +48,5 @@ jobs:
       uses: Azure/functions-action@v1
       with:
         app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-        publish-profile: ${{ secrets.notes_function_5C90 }}
+        publish-profile: ${{ secrets.notes_function_canary_9BE6 }}
         package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
