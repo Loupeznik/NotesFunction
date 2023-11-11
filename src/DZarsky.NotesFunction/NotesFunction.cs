@@ -74,6 +74,7 @@ public class NotesFunction
 
     [FunctionName(nameof(GetNote))]
     [OpenApiOperation(operationId: nameof(GetNote), tags: new[] { Constants.NotesSectionName })]
+    [OpenApiParameter("noteId", Type = typeof(string))]
     [OpenApiSecurity(ApiConstants.BasicAuthSchemeID, SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Basic)]
     [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: ApiConstants.JsonContentType, bodyType: typeof(NoteDto), Description = "Success")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.BadRequest, Description = nameof(HttpStatusCode.BadRequest))]
@@ -124,6 +125,7 @@ public class NotesFunction
 
     [FunctionName(nameof(DeleteNote))]
     [OpenApiOperation(operationId: nameof(DeleteNote), tags: new[] { Constants.NotesSectionName })]
+    [OpenApiParameter("noteId", Type = typeof(string))]
     [OpenApiSecurity(ApiConstants.BasicAuthSchemeID, SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Basic)]
     [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: ApiConstants.JsonContentType, bodyType: typeof(object), Description = "Success")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.BadRequest, Description = nameof(HttpStatusCode.BadRequest))]
