@@ -43,7 +43,8 @@ public sealed class NoteService
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             UserId = userId,
-            IsEncrypted = note.IsEncrypted
+            IsEncrypted = note.IsEncrypted,
+            Category = note.Category
         });
 
         if (response.StatusCode == HttpStatusCode.Created)
@@ -51,7 +52,7 @@ public sealed class NoteService
             return new GenericResult<NoteDto>(ResultStatus.Success, _mapper.Map<NoteDto>(response.Resource));
         }
 
-        _logger.LogError("Create note request failed with status {ReponseStatusCode} - Result {Result}",
+        _logger.LogError("Create note request failed with status {ResponseStatusCode} - Result {Result}",
             response.StatusCode, JsonConvert.SerializeObject(response));
         return new GenericResult<NoteDto>(ResultStatus.Failed);
     }
@@ -93,7 +94,8 @@ public sealed class NoteService
         return new GenericResult<NoteDto>(ResultStatus.Failed);
     }
 
-    public async Task<GenericResult<IList<NoteDto>>> List(string userId, bool getDeleted = false)
+    public async Task<GenericResult<IList<NoteDto>>> List(string userId, string? category = null,
+        bool getDeleted = false)
     {
         var container = GetContainer();
 
@@ -101,7 +103,8 @@ public sealed class NoteService
 
         var response = container
                        .GetItemLinqQueryable<Note>()
-                       .Where(x => x.UserId == userId && (getDeleted || !x.IsDeleted))
+                       .Where(x => x.UserId == userId && (getDeleted || !x.IsDeleted) &&
+                                   (string.IsNullOrWhiteSpace(category) || x.Category == category))
                        .ToFeedIterator();
 
         notes.AddRange(await response.ReadNextAsync());

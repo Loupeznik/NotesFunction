@@ -102,6 +102,7 @@ public class NotesFunction
     [FunctionName(nameof(GetNotes))]
     [OpenApiOperation(operationId: nameof(GetNotes), tags: new[] { Constants.NotesSectionName })]
     [OpenApiParameter("getDeleted", In = ParameterLocation.Query, Type = typeof(bool), Required = false, Description = "Determines if deleted records should be fetched, defaults to 'false'")]
+    [OpenApiParameter("category", In = ParameterLocation.Query, Type = typeof(string), Required = false, Description = "Filters notes by category")]
     [OpenApiSecurity(ApiConstants.BasicAuthSchemeID, SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Basic)]
     [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: ApiConstants.JsonContentType, bodyType: typeof(List<NoteDto>), Description = "The OK response")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.BadRequest, Description = nameof(HttpStatusCode.BadRequest))]
@@ -117,8 +118,9 @@ public class NotesFunction
         }
 
         var getDeleted = req.Query.ContainsKey("getDeleted") && bool.TryParse(req.Query["getDeleted"], out var getDeletedValue) && getDeletedValue;
+        var category = req.Query.ContainsKey("category") ? req.Query["category"].ToString() : null;
 
-        var result = await _noteService.List(authResult.UserID, getDeleted);
+        var result = await _noteService.List(authResult.UserID, category, getDeleted);
 
         return ResolveResultStatus(result.Status, result.Result);
     }
