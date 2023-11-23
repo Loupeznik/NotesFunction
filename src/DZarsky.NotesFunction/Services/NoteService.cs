@@ -170,5 +170,44 @@ public sealed class NoteService
         return new GenericResult(ResultStatus.Failed);
     }
 
+    public async Task<IList<UserNotes>> GetNotesForNotificationProcessing()
+    {
+        var container = GetContainer();
+        var result = new List<UserNotes>();
+
+        var response = container
+                       .GetItemLinqQueryable<Note>()
+                       .Where(x => !x.IsDeleted && x.DueDate <= DateTime.Now && !x.DueNotificationSent)
+                       .GroupBy(x => x.UserId)
+                       .ToFeedIterator();
+
+        foreach (var userNotes in await response.ReadNextAsync())
+        {
+            result.Add(new UserNotes(userNotes.Key, _mapper.Map<List<NoteDto>>(userNotes)));
+        }
+
+        return result;
+    }
+
+    public async Task SetNotificationSent(string noteId)
+    {
+        var container = GetContainer();
+
+        var response = await container.PatchItemAsync<Note>(noteId, new PartitionKey(noteId),
+            new List<PatchOperation>
+            {
+                PatchOperation.Replace("/DueNotificationSent", true)
+            });
+
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            _logger.LogError(
+                "Set notification sent request failed with status {ResponseStatusCode} - Result {ResponseResult}",
+                response.StatusCode, JsonConvert.SerializeObject(response));
+        }
+    }
+
     private Container GetContainer() => _db.GetContainer(_config.DatabaseID, Constants.NotesContainerId);
+
+    public sealed record UserNotes(string UserId, IList<NoteDto> Notes);
 }

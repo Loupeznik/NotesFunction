@@ -18,7 +18,7 @@ using DZarsky.CommonLibraries.AzureFunctions.Security;
 
 namespace DZarsky.NotesFunction;
 
-public class NotesFunction
+public sealed class NotesFunction
 {
     private readonly NoteService _noteService;
     private readonly IAuthManager _authManager;

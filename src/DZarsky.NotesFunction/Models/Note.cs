@@ -33,4 +33,8 @@ public sealed class Note
     public bool IsEncrypted { get; set; }
 
     public string? Category { get; set; }
+    
+    public DateTime? DueDate { get; set; }
+
+    public bool DueNotificationSent { get; set; } = false;
 }

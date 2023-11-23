@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using DZarsky.NotesFunction.HealthChecks;
+using DZarsky.NotesFunction.Infrastructure;
 
 [assembly: FunctionsStartup(typeof(DZarsky.NotesFunction.Startup))]
 
@@ -24,6 +25,7 @@ namespace DZarsky.NotesFunction
         public override void Configure(IFunctionsHostBuilder builder)
         {
             builder.AddCommonFunctionServices(Configuration, AuthType.Zitadel);
+            builder.AddFirebase(Configuration);
 
             builder.Services.AddScoped<NoteService>();
             builder.Services.AddScoped<IntegrationConnectivityHealthCheck>();

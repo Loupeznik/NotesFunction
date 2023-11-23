@@ -25,4 +25,6 @@ public sealed class NoteDto
     public bool IsEncrypted { get; set; }
 
     public string? Category { get; set; }
+    
+    public DateTime? DueDate { get; set; }
 }
