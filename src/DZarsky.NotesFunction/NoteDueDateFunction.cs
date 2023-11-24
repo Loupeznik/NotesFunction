@@ -42,7 +42,7 @@ public sealed class NoteDueDateFunction
                 {
                     var result = await _client.PostAsJsonAsync("send", new SendMessageRequest
                     {
-                        To = $"/topics/{_configuration.Topic}/{group.UserId}",
+                        To = $"/topics/{_configuration.Topic}_{group.UserId}",
                         Notification = new Notification
                         {
                             Title = "A note is due",
