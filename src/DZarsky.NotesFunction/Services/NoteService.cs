@@ -179,10 +179,11 @@ public sealed class NoteService
         var response = container
                        .GetItemLinqQueryable<Note>()
                        .Where(x => !x.IsDeleted && x.DueDate <= DateTime.Now && !x.DueNotificationSent)
-                       .GroupBy(x => x.UserId)
                        .ToFeedIterator();
 
-        foreach (var userNotes in await response.ReadNextAsync())
+        var notes = (await response.ReadNextAsync()).GroupBy(x => x.UserId);
+
+        foreach (var userNotes in notes)
         {
             result.Add(new UserNotes(userNotes.Key, _mapper.Map<List<NoteDto>>(userNotes)));
         }

@@ -12,25 +12,27 @@ namespace DZarsky.NotesFunction;
 
 public sealed class NoteDueDateFunction
 {
-    private readonly HttpClient _client;
+    private readonly IHttpClientFactory _clientFactory;
     private readonly FirebaseCloudMessagingConfiguration _configuration;
     private readonly NoteService _noteService;
 
     public NoteDueDateFunction(IHttpClientFactory httpClientFactory, FirebaseCloudMessagingConfiguration configuration,
         NoteService noteService)
     {
-        _client = httpClientFactory.CreateClient(HttpClients.FirebaseCloudMessagingClient);
+        _clientFactory = httpClientFactory;
         _configuration = configuration;
         _noteService = noteService;
     }
 
     [FunctionName("NoteDueDateFunction")]
-    public async Task RunAsync([TimerTrigger("0 10,20 * * *")] TimerInfo timer, ILogger log)
+    public async Task RunAsync([TimerTrigger("* * * * *")] TimerInfo timer, ILogger log)
     {
         if (!_configuration.IsEnabled)
         {
             return;
         }
+
+        var client = _clientFactory.CreateClient(HttpClients.FirebaseCloudMessagingClient);
 
         try
         {
@@ -40,7 +42,7 @@ public sealed class NoteDueDateFunction
             {
                 foreach (var note in group.Notes)
                 {
-                    var result = await _client.PostAsJsonAsync("send", new SendMessageRequest
+                    var result = await client.PostAsJsonAsync("send", new SendMessageRequest
                     {
                         To = $"/topics/{_configuration.Topic}_{group.UserId}",
                         Notification = new Notification
