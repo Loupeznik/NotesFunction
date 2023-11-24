@@ -44,7 +44,8 @@ public sealed class NoteService
             UpdatedAt = DateTime.UtcNow,
             UserId = userId,
             IsEncrypted = note.IsEncrypted,
-            Category = note.Category
+            Category = note.Category,
+            DueDate = note.DueDate
         });
 
         if (response.StatusCode == HttpStatusCode.Created)
