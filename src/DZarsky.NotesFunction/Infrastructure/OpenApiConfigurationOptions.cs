@@ -22,6 +22,8 @@ namespace DZarsky.NotesFunction.Infrastructure
 
         public bool ForceHttps { get; set; } = false;
 
-        public List<OpenApiServer> Servers { get; set; } = new List<OpenApiServer>();
+        public List<OpenApiServer> Servers { get; set; } = [];
+
+        public List<IDocumentFilter> DocumentFilters { get; set; } = [];
     }
 }

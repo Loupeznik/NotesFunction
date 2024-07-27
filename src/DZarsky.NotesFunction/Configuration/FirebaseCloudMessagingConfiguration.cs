@@ -2,11 +2,11 @@
 
 public record FirebaseCloudMessagingConfiguration
 {
-    public bool IsEnabled { get; set; }
-    
-    public string? ServerKey { get; set; }
+    public bool IsEnabled { get; init; }
 
-    public string Topic { get; set; } = string.Empty;
+    public required string Topic { get; init; }
 
-    public string BaseUrl { get; set; } = "https://fcm.googleapis.com/fcm/";
+    public string BaseUrl { get; init; } = "https://fcm.googleapis.com/v1/projects/";
+
+    public required string ProjectId { get; init; }
 }

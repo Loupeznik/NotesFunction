@@ -42,13 +42,16 @@ public sealed class NoteDueDateFunction
             {
                 foreach (var note in group.Notes)
                 {
-                    var result = await client.PostAsJsonAsync("send", new SendMessageRequest
+                    var result = await client.PostAsJsonAsync("messages:send", new SendMessageRequest
                     {
-                        To = $"/topics/{_configuration.Topic}_{group.UserId}",
-                        Notification = new Notification
+                        Message = new Message
                         {
-                            Title = "A note is due",
-                            Body = $"Note {note.Title} is due on {note.DueDate}"
+                            Topic = $"{_configuration.Topic}_{group.UserId}",
+                            Notification = new Notification
+                            {
+                                Title = "A note is due",
+                                Body = $"Note {note.Title} is due on {note.DueDate}"
+                            }
                         }
                     });
 
