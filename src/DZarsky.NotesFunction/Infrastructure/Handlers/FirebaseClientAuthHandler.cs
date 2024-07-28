@@ -12,7 +12,7 @@ public sealed class FirebaseClientAuthHandler : DelegatingHandler
     protected override async Task<HttpResponseMessage> SendAsync(
     HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        const string file = @"C\Temp\cucappka-0cb6316d92c2.json";
+        const string file = @"C:\Temp\cucappka-0cb6316d92c2.json";
         
         if (!File.Exists(file))
         {
@@ -31,7 +31,6 @@ public sealed class FirebaseClientAuthHandler : DelegatingHandler
         
         request.Headers.Add("Authorization", $"Bearer {token}");
         
-
         return await base.SendAsync(request, cancellationToken);
     }
 }

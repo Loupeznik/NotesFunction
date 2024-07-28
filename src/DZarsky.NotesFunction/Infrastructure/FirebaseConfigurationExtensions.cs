@@ -26,6 +26,8 @@ public static class FirebaseConfigurationExtensions
             return builder;
         }
 
+        builder.Services.AddTransient<FirebaseClientAuthHandler>();
+
         builder.Services.AddHttpClient(HttpClients.FirebaseCloudMessagingClient, client =>
         {
             client.BaseAddress = new Uri(string.Concat(config.BaseUrl, config.ProjectId));

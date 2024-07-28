@@ -80,7 +80,7 @@ public sealed class NotesFunction
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.BadRequest, Description = nameof(HttpStatusCode.BadRequest))]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NotFound, Description = nameof(HttpStatusCode.NotFound))]
     public async Task<IActionResult> GetNote(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = Constants.NotesSectionName + "/{noteId}")] HttpRequest req, string? noteId)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = Constants.NotesSectionName + "/{noteId}")] HttpRequest req, string noteId)
     {
         if (string.IsNullOrWhiteSpace(noteId))
         {
@@ -133,7 +133,7 @@ public sealed class NotesFunction
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.BadRequest, Description = nameof(HttpStatusCode.BadRequest))]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NotFound, Description = nameof(HttpStatusCode.NotFound))]
     public async Task<IActionResult> DeleteNote(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = Constants.NotesSectionName + "/{noteId}")] HttpRequest req, string? noteId)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = Constants.NotesSectionName + "/{noteId}")] HttpRequest req, string noteId)
     {
         if (string.IsNullOrWhiteSpace(noteId))
         {
@@ -154,7 +154,7 @@ public sealed class NotesFunction
 
     private async Task<AuthResult> Authorize(HttpRequest request) => await _authManager.ValidateToken(request.Headers.Authorization);
 
-    private static IActionResult ResolveResultStatus<T>(ResultStatus status, T? result)
+    private static IActionResult ResolveResultStatus<T>(ResultStatus status, T result)
     {
         if (result != null && status == ResultStatus.Success)
         {
