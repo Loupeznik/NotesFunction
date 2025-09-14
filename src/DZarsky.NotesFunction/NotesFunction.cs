@@ -9,12 +9,11 @@ using DZarsky.NotesFunction.Services;
 using DZarsky.NotesFunction.Services.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
+using DZarsky.CommonLibraries.AzureFunctions.Security;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.OpenApi.Models;
-using DZarsky.CommonLibraries.AzureFunctions.Security;
 
 namespace DZarsky.NotesFunction;
 
@@ -29,7 +28,7 @@ public sealed class NotesFunction
         _authManager = authManager;
     }
 
-    [FunctionName(nameof(CreateNote))]
+    [Function(nameof(CreateNote))]
     [OpenApiOperation(operationId: nameof(CreateNote), tags: new[] { Constants.NotesSectionName })]
     [OpenApiSecurity(ApiConstants.BasicAuthSchemeID, SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Basic)]
     [OpenApiRequestBody(ApiConstants.JsonContentType, typeof(NoteDto))]
@@ -50,7 +49,7 @@ public sealed class NotesFunction
         return ResolveResultStatus(result.Status, result.Result);
     }
 
-    [FunctionName(nameof(UpdateNote))]
+    [Function(nameof(UpdateNote))]
     [OpenApiOperation(operationId: nameof(UpdateNote), tags: new[] { Constants.NotesSectionName })]
     [OpenApiSecurity(ApiConstants.BasicAuthSchemeID, SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Basic)]
     [OpenApiRequestBody(ApiConstants.JsonContentType, typeof(NoteDto))]
@@ -72,7 +71,7 @@ public sealed class NotesFunction
         return ResolveResultStatus(result.Status, result.Result);
     }
 
-    [FunctionName(nameof(GetNote))]
+    [Function(nameof(GetNote))]
     [OpenApiOperation(operationId: nameof(GetNote), tags: new[] { Constants.NotesSectionName })]
     [OpenApiParameter("noteId", Type = typeof(string))]
     [OpenApiSecurity(ApiConstants.BasicAuthSchemeID, SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Basic)]
@@ -99,7 +98,7 @@ public sealed class NotesFunction
         return ResolveResultStatus(result.Status, result.Result);
     }
 
-    [FunctionName(nameof(GetNotes))]
+    [Function(nameof(GetNotes))]
     [OpenApiOperation(operationId: nameof(GetNotes), tags: new[] { Constants.NotesSectionName })]
     [OpenApiParameter("getDeleted", In = ParameterLocation.Query, Type = typeof(bool), Required = false, Description = "Determines if deleted records should be fetched, defaults to 'false'")]
     [OpenApiParameter("category", In = ParameterLocation.Query, Type = typeof(string), Required = false, Description = "Filters notes by category")]
@@ -125,7 +124,7 @@ public sealed class NotesFunction
         return ResolveResultStatus(result.Status, result.Result);
     }
 
-    [FunctionName(nameof(DeleteNote))]
+    [Function(nameof(DeleteNote))]
     [OpenApiOperation(operationId: nameof(DeleteNote), tags: new[] { Constants.NotesSectionName })]
     [OpenApiParameter("noteId", Type = typeof(string))]
     [OpenApiSecurity(ApiConstants.BasicAuthSchemeID, SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Basic)]

@@ -1,9 +1,7 @@
-﻿using System.Threading.Tasks;
-using DZarsky.NotesFunction.HealthChecks;
+﻿using DZarsky.NotesFunction.HealthChecks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace DZarsky.NotesFunction;
@@ -14,7 +12,7 @@ public sealed class HealthCheckFunction
 
     public HealthCheckFunction(IntegrationConnectivityHealthCheck healthCheck) => _healthCheck = healthCheck;
 
-    [FunctionName("HealthCheck")]
+    [Function("HealthCheck")]
     public async Task<IActionResult> RunCheck(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "healthz")] HttpRequest req)
     {

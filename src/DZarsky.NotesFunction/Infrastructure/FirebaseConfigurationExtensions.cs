@@ -1,8 +1,6 @@
-﻿using System;
-using DZarsky.CommonLibraries.AzureFunctions.Extensions;
+﻿using DZarsky.CommonLibraries.AzureFunctions.Extensions;
 using DZarsky.NotesFunction.Configuration;
 using DZarsky.NotesFunction.General;
-using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,7 +8,7 @@ namespace DZarsky.NotesFunction.Infrastructure;
 
 public static class FirebaseConfigurationExtensions
 {
-    public static IFunctionsHostBuilder AddFirebase(this IFunctionsHostBuilder builder, IConfiguration configuration)
+    public static IServiceCollection AddFirebase(this IServiceCollection services, IConfiguration configuration)
     {
         var config = new FirebaseCloudMessagingConfiguration
         {
@@ -22,7 +20,7 @@ public static class FirebaseConfigurationExtensions
 
         if (!config.IsEnabled)
         {
-            return builder;
+            return services;
         }
             
         if (string.IsNullOrWhiteSpace(config.ServerKey))
@@ -30,14 +28,14 @@ public static class FirebaseConfigurationExtensions
             throw new InvalidOperationException("FCM is enabled but no server key is configured");
         }
 
-        builder.Services.AddHttpClient(HttpClients.FirebaseCloudMessagingClient, client =>
+        services.AddHttpClient(HttpClients.FirebaseCloudMessagingClient, client =>
         {
             client.BaseAddress = new Uri(config.BaseUrl);
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {config.ServerKey}");
         });
 
-        builder.Services.AddSingleton(config);
+        services.AddSingleton(config);
 
-        return builder;
+        return services;
     }
 }

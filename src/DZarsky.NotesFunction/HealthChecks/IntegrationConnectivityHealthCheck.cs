@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using DZarsky.CommonLibraries.AzureFunctions.Extensions;
+﻿using DZarsky.CommonLibraries.AzureFunctions.Extensions;
 using DZarsky.NotesFunction.Services;
 using DZarsky.NotesFunction.Services.Models;
 using Microsoft.Extensions.Configuration;

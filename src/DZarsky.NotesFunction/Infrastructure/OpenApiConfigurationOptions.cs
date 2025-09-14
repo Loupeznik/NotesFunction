@@ -1,7 +1,6 @@
 ﻿using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Abstractions;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.OpenApi.Models;
-using System.Collections.Generic;
 
 namespace DZarsky.NotesFunction.Infrastructure
 {
@@ -23,5 +22,6 @@ namespace DZarsky.NotesFunction.Infrastructure
         public bool ForceHttps { get; set; } = false;
 
         public List<OpenApiServer> Servers { get; set; } = new List<OpenApiServer>();
+        public List<IDocumentFilter> DocumentFilters { get; set; } = new List<IDocumentFilter>();
     }
 }
